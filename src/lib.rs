@@ -3,6 +3,8 @@ use windows::Win32::UI::WindowsAndMessaging::{
   MessageBoxW, IDNO, IDOK, IDYES, MB_ICONERROR, MB_ICONINFORMATION, MB_ICONQUESTION, MB_ICONWARNING, MB_OK, MB_YESNO, MESSAGEBOX_RESULT, MESSAGEBOX_STYLE,
 };
 
+pub mod registry;
+
 pub enum DialogIcon {
   Info = MB_ICONINFORMATION.0 as isize,
   Question = MB_ICONQUESTION.0 as isize,
@@ -34,8 +36,8 @@ impl From<MESSAGEBOX_RESULT> for DialogResult {
 
 /// Display a message box dialog.
 pub fn dialog(title: impl ToString, text: impl ToString, icon: DialogIcon, buttons: DialogButtons) -> DialogResult {
-  let title: Vec<u16> = (title.to_string() + "\0").encode_utf16().collect();
-  let text: Vec<u16> = (text.to_string() + "\0").encode_utf16().collect();
+  let title = to_utf16(title);
+  let text = to_utf16(text);
 
   unsafe {
     MessageBoxW(
@@ -46,4 +48,8 @@ pub fn dialog(title: impl ToString, text: impl ToString, icon: DialogIcon, butto
     )
     .into()
   }
+}
+
+fn to_utf16(s: impl ToString) -> Vec<u16> {
+  s.to_string().encode_utf16().chain(std::iter::once(0)).collect()
 }

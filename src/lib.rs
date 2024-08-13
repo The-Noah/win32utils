@@ -4,6 +4,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 };
 
 pub mod registry;
+pub mod shell;
 
 pub enum DialogIcon {
   Info = MB_ICONINFORMATION.0 as isize,

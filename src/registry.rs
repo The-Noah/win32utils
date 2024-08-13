@@ -6,7 +6,7 @@ use windows::{
   },
 };
 
-use crate::to_utf16;
+use crate::*;
 
 pub enum HKEY {
   CurrentUser,

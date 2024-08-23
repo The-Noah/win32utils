@@ -38,6 +38,40 @@ pub fn exists(hkey: HKEY, subkey: impl ToString, name: impl ToString) -> Result<
   Ok(true)
 }
 
+pub fn read_string(hkey: HKEY, subkey: impl ToString, name: impl ToString) -> Result<String, impl ToString> {
+  let mut hkey = match hkey {
+    HKEY::CurrentUser => HKEY_CURRENT_USER,
+  };
+
+  if unsafe { RegOpenKeyExW(HKEY_CURRENT_USER, PCWSTR::from_raw(to_utf16(subkey).as_ptr()), 0, KEY_READ, &mut hkey) }.is_err() {
+    return Err("Failed to open registry key");
+  }
+
+  let mut buffer = vec![0u16; 1024];
+  let mut buffer_size = (buffer.len() * 2) as u32;
+
+  if unsafe {
+    RegQueryValueExW(
+      hkey,
+      PCWSTR::from_raw(to_utf16(name).as_ptr()),
+      None,
+      None,
+      Some(buffer.as_mut_ptr() as *mut u8),
+      Some(&mut buffer_size),
+    )
+  }
+  .is_err()
+  {
+    return Err("Failed to query registry key");
+  }
+
+  if unsafe { RegCloseKey(hkey) }.is_err() {
+    return Err("Failed to close registry key");
+  }
+
+  Ok(from_utf16(&buffer[..(buffer_size as usize) / 2]))
+}
+
 pub fn write_string(hkey: HKEY, subkey: impl ToString, name: impl ToString, value: impl ToString) -> Result<(), impl ToString> {
   let mut hkey = match hkey {
     HKEY::CurrentUser => HKEY_CURRENT_USER,

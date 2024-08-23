@@ -54,3 +54,7 @@ pub fn dialog(title: impl ToString, text: impl ToString, icon: DialogIcon, butto
 fn to_utf16(s: impl ToString) -> Vec<u16> {
   s.to_string().encode_utf16().chain(std::iter::once(0)).collect()
 }
+
+fn from_utf16(s: &[u16]) -> String {
+  String::from_utf16_lossy(&s[..s.iter().position(|&c| c == 0).unwrap_or(s.len())])
+}
